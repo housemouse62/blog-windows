@@ -1,0 +1,20 @@
+{
+  "name": "blog-window",
+  "version": "1.0.0",
+  "description": "Blog API Project",
+  "homepage": "https://github.com/housemouse62/blog-windows#readme",
+  "bugs": {
+    "url": "https://github.com/housemouse62/blog-windows/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/housemouse62/blog-windows.git"
+  },
+  "license": "ISC",
+  "author": "thought windows",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
