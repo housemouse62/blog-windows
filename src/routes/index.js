@@ -1,9 +1,6 @@
-import session from "./session.js";
-import user from "./user.js";
-import post from "./post.js";
+import { Router } from "express";
+import { prisma } from "../../db/prismaClient.js";
 
-export default {
-  session,
-  user,
-  post,
-};
+const indexRouter = Router();
+
+export default indexRouter;
