@@ -3,6 +3,7 @@ import express from "express";
 import postRouter from "./src/routes/post.js";
 import userRouter from "./src/routes/user.js";
 import indexRouter from "./src/routes/index.js";
+import commentRouter from "./src/routes/comment.js";
 import cors from "cors";
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", indexRouter);
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
+app.use("/posts", commentRouter);
 
 app.use((err, req, res, next) => {
   console.error(err);
