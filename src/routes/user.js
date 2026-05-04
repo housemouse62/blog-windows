@@ -1,10 +1,101 @@
 import { Router } from "express";
 import { prisma } from "../../db/prismaClient.js";
+import rateLimit from "express-rate-limit";
+import { body } from "express-validator";
+import { validationResult } from "express-validator";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10 });
 
 const userRouter = Router();
 
-userRouter.get("/", (req, res) => {
-  return res.send(Object.values(req.context.models.users));
+// userRouter.get("/:userID", authLimiter (req, res, next) => {
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: { id:  },
+//     });
+//     res.json(user);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
+
+userRouter.post(
+  "/create",
+  authLimiter,
+  body("confirmEmail").custom((value, { req }) => {
+    if (value !== req.body.email)
+      throw new Error("Email addresses do not match.");
+    return true;
+  }),
+  body("confirmPassword").custom((value, { req }) => {
+    if (value !== req.body.password) throw new Error("Passwords do not match.");
+    return true;
+  }),
+  async (req, res, next) => {
+    const formErrors = validationResult(req);
+    if (!formErrors.isEmpty()) {
+      const err = new Error("Errors found in the form. Try again.");
+      return res.status(400).json(formErrors);
+    }
+    try {
+      const hashedPassword = await bcrypt.hash(req.body.password, 10);
+      const user = await prisma.user.create({
+        data: {
+          email: req.body.email,
+          password: hashedPassword,
+          name: req.body.name || "",
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          usertype: true,
+        },
+      });
+      return res.status(201).json(user);
+    } catch (err) {
+      return next(err);
+    }
+  },
+);
+
+userRouter.post("/login", async (req, res, next) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: req.body.email },
+    });
+    if (!user) {
+      return res.status(404).json({ error: "Invalid Credentials" });
+    }
+    const match = await bcrypt.compare(req.body.password, user.password);
+    if (!match) {
+      return res.status(404).json({ error: "Invalid Credentials" });
+    }
+    const tokenUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      usertype: user.usertype,
+    };
+    jwt.sign(
+      { tokenUser },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+      (err, token) => {
+        if (err) {
+          return next(err);
+        }
+        res.status(200).json({
+          token,
+        });
+      },
+    );
+    // return res.status(200).json(user);
+  } catch (err) {
+    return next(err);
+  }
 });
 
 export default userRouter;
