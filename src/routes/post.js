@@ -75,7 +75,7 @@ postRouter.get("/:postID", async (req, res, next) => {
   }
 });
 
-postRouter.post("/posts", verifyToken, verifyAuthor, async (req, res, next) => {
+postRouter.post("/", verifyToken, verifyAuthor, async (req, res, next) => {
   try {
     const newPost = await prisma.post.create({
       data: {
@@ -92,7 +92,7 @@ postRouter.post("/posts", verifyToken, verifyAuthor, async (req, res, next) => {
 });
 
 postRouter.patch(
-  "/posts/:postID",
+  "/:postID",
   verifyToken,
   verifyAuthor,
   async (req, res, next) => {
@@ -118,7 +118,7 @@ postRouter.patch(
 );
 
 postRouter.delete(
-  "/posts/:postID",
+  "/:postID",
   verifyToken,
   verifyAuthor,
   async (req, res, next) => {

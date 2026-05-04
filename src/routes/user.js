@@ -56,6 +56,9 @@ userRouter.post(
       });
       return res.status(201).json(user);
     } catch (err) {
+      if (err.code === "P2002") {
+        return res.status(400).json({ error: "Email already in use" });
+      }
       return next(err);
     }
   },

@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import postRouter from "./src/routes/post.js";
 import userRouter from "./src/routes/user.js";
-import indexRouter from "./src/routes/index.js";
 import commentRouter from "./src/routes/comment.js";
 import cors from "cors";
 
@@ -13,7 +12,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/", indexRouter);
 app.use("/users", userRouter);
 app.use("/posts", postRouter);
 app.use("/posts", commentRouter);
