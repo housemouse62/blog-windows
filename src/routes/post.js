@@ -10,6 +10,11 @@ postRouter.get("/", async (req, res, next) => {
   try {
     const allPosts = await prisma.post.findMany({
       where: { published: true },
+      include: {
+        _count: {
+          select: { comments: true },
+        },
+      },
     });
     res.json(allPosts);
   } catch (err) {
@@ -63,6 +68,7 @@ postRouter.get("/:postID", async (req, res, next) => {
     }
     const singlePost = await prisma.post.findUnique({
       where: { id: postID },
+      include: { comments: true },
     });
     if (!singlePost || !singlePost.published) {
       const err = new Error("Post not found");
