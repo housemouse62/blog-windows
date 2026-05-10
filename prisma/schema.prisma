@@ -25,6 +25,7 @@ model User {
   usertype    Usertype  @default(reader)
   posts       Post[]
   comments    Comment[]
+  reply      Reply[]
 }
 
 model Post {
@@ -46,4 +47,15 @@ model Comment {
   post        Post    @relation(fields: [postID], references: [id])
   postID      Int
   commenttime DateTime  @default(now())
+  reply       Reply[]
+}
+
+model Reply {
+  id          Int     @id @default(autoincrement())
+  replybody   String
+  author      User?   @relation(fields: [authorID], references: [id])
+  authorID    Int?
+  comment     Comment @relation(fields: [commentID], references: [id])
+  commentID   Int
+  replytime   DateTime  @default(now())
 }

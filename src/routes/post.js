@@ -22,40 +22,55 @@ postRouter.get("/", async (req, res, next) => {
   }
 });
 
-// view all unpublished posts
-postRouter.get("/unpublished", verifyToken, async (req, res, next) => {
-  try {
-    const unpublishedPosts = await prisma.post.findMany({
-      where: { published: false },
-    });
-    res.json(unpublishedPosts);
-  } catch (err) {
-    next(err);
-  }
-});
+// view all published and unpublished posts for Admin side
+postRouter.get(
+  "/allPosts",
+  verifyToken,
+  verifyAuthor,
+  async (req, res, next) => {
+    try {
+      const allPosts = await prisma.post.findMany({
+        include: {
+          _count: {
+            select: { comments: true },
+          },
+        },
+      });
+      res.json(allPosts);
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
-// view one unpublished post
-postRouter.get("/unpublished/:postID", verifyToken, async (req, res, next) => {
-  try {
-    const postID = parseInt(req.params.postID);
-    if (isNaN(postID)) {
-      const err = new Error("Post not found");
-      err.status = 400;
-      return next(err);
+// view one post for admin side
+postRouter.get(
+  "/allPosts/:postID",
+  verifyToken,
+  verifyAuthor,
+  async (req, res, next) => {
+    try {
+      const postID = parseInt(req.params.postID);
+      if (isNaN(postID)) {
+        const err = new Error("Post not found");
+        err.status = 400;
+        return next(err);
+      }
+      const singlePost = await prisma.post.findUnique({
+        where: { id: postID },
+        include: { comments: true },
+      });
+      if (!singlePost) {
+        const err = new Error("No post found");
+        err.status = 404;
+        return next(err);
+      }
+      res.json(singlePost);
+    } catch (err) {
+      next(err);
     }
-    const unpublishedPost = await prisma.post.findUnique({
-      where: { id: postID },
-    });
-    if (!unpublishedPost || unpublishedPost.published) {
-      const err = new Error("No unpublished post");
-      err.status = 404;
-      return next(err);
-    }
-    res.json(unpublishedPost);
-  } catch (err) {
-    next(err);
-  }
-});
+  },
+);
 
 // view single post
 postRouter.get("/:postID", async (req, res, next) => {
@@ -81,6 +96,7 @@ postRouter.get("/:postID", async (req, res, next) => {
   }
 });
 
+// Create post admin side
 postRouter.post("/", verifyToken, verifyAuthor, async (req, res, next) => {
   try {
     const newPost = await prisma.post.create({
@@ -97,6 +113,7 @@ postRouter.post("/", verifyToken, verifyAuthor, async (req, res, next) => {
   }
 });
 
+// edit post admin side
 postRouter.patch(
   "/:postID",
   verifyToken,
@@ -123,6 +140,7 @@ postRouter.patch(
   },
 );
 
+// delete post admin side
 postRouter.delete(
   "/:postID",
   verifyToken,

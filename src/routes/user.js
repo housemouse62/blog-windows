@@ -92,6 +92,7 @@ userRouter.post("/login", async (req, res, next) => {
         }
         res.status(200).json({
           token,
+          user: tokenUser,
         });
       },
     );
