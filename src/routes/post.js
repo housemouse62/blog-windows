@@ -58,7 +58,11 @@ postRouter.get(
       }
       const singlePost = await prisma.post.findUnique({
         where: { id: postID },
-        include: { comments: true },
+        include: {
+          comments: {
+            include: { author: true, reply: { include: { author: true } } },
+          },
+        },
       });
       if (!singlePost) {
         const err = new Error("No post found");
@@ -72,7 +76,7 @@ postRouter.get(
   },
 );
 
-// view single post
+// view single post public side
 postRouter.get("/:postID", async (req, res, next) => {
   try {
     const postID = parseInt(req.params.postID);
@@ -83,7 +87,7 @@ postRouter.get("/:postID", async (req, res, next) => {
     }
     const singlePost = await prisma.post.findUnique({
       where: { id: postID },
-      include: { comments: true },
+      include: { comments: { include: { author: true } } },
     });
     if (!singlePost || !singlePost.published) {
       const err = new Error("Post not found");

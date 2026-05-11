@@ -55,7 +55,7 @@ model Reply {
   replybody   String
   author      User?   @relation(fields: [authorID], references: [id])
   authorID    Int?
-  comment     Comment @relation(fields: [commentID], references: [id])
+  comment     Comment @relation(fields: [commentID], references: [id], onDelete: Cascade)
   commentID   Int
   replytime   DateTime  @default(now())
 }
