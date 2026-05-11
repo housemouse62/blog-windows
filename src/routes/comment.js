@@ -17,7 +17,7 @@ commentRouter.get("/:postID/comments", async (req, res, next) => {
 
     const comments = await prisma.comment.findMany({
       where: { postID: postID },
-      include: { author: true },
+      include: { author: { include: { screenname: true } } },
     });
     console.log(comments);
     res.status(200).json(comments);
