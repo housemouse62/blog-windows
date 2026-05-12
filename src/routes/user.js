@@ -15,8 +15,8 @@ userRouter.patch(
   "/profile",
   authLimiter,
   verifyToken,
-  body("confirmPassword").custom((value, { req }) => {
-    if (value !== req.body.password)
+  body("confirmNewPassword").custom((value, { req }) => {
+    if (value !== req.body.newPassword)
       throw new Error("New passwords do not match.");
     return true;
   }),
@@ -26,7 +26,7 @@ userRouter.patch(
         where: { id: req.user.id },
       });
       const updateData = {};
-      if (req.body.password) {
+      if (req.body.newPassword) {
         const match = await bcrypt.compare(
           req.body.currentPassword,
           user.password,
@@ -34,7 +34,7 @@ userRouter.patch(
         if (!match) {
           return res.status(404).json({ error: "Invalid Credentials" });
         }
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const hashedPassword = await bcrypt.hash(req.body.newPassword, 10);
         updateData.password = hashedPassword;
       }
       if (req.body.name) updateData.name = req.body.name;
@@ -49,9 +49,30 @@ userRouter.patch(
           email: true,
           name: true,
           usertype: true,
+          screenname: true,
         },
       });
-      return res.status(200).json(newUser);
+      const tokenUser = {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        usertype: newUser.usertype,
+        screenname: newUser.screenname,
+      };
+      jwt.sign(
+        { tokenUser },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" },
+        (err, token) => {
+          if (err) {
+            return next(err);
+          }
+          res.status(200).json({
+            token,
+            user: tokenUser,
+          });
+        },
+      );
     } catch (err) {
       next(err);
     }
@@ -120,20 +141,7 @@ userRouter.post("/login", async (req, res, next) => {
       usertype: user.usertype,
       screenname: user.screenname,
     };
-    jwt.sign(
-      { tokenUser },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" },
-      (err, token) => {
-        if (err) {
-          return next(err);
-        }
-        res.status(200).json({
-          token,
-          user: tokenUser,
-        });
-      },
-    );
+
     // return res.status(200).json(user);
   } catch (err) {
     return next(err);
