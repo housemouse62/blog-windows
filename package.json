@@ -16,8 +16,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "./node_modules/.bin/prisma generate && ./node_modules/.bin/prisma migrate deploy",
-    "start": "node app.js"
+    "build": "./node_modules/.bin/prisma generate",
+    "start": "./node_modules/.bin/prisma migrate deploy && node app.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
