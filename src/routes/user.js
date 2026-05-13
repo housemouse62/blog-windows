@@ -141,7 +141,20 @@ userRouter.post("/login", async (req, res, next) => {
       usertype: user.usertype,
       screenname: user.screenname,
     };
-
+    jwt.sign(
+      { tokenUser },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" },
+      (err, token) => {
+        if (err) {
+          return next(err);
+        }
+        res.status(200).json({
+          token,
+          user: tokenUser,
+        });
+      },
+    );
     // return res.status(200).json(user);
   } catch (err) {
     return next(err);
